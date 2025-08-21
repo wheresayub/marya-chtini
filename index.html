@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pour Marya ✨ – Compte à rebours</title>
+  <meta name="description" content="Un petit site cute pour Marya avec un compte à rebours romantique."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: #0f0a1f;
+      --accent: #ff6aa2;
+      --accent-2: #b86bff;
+      --text: #f6f6f9;
+      --muted: #c9c9d4;
+      --card: rgba(255,255,255,.08);
+      --glass: rgba(255,255,255,.12);
+      --shadow: 0 20px 60px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:Poppins, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color:var(--text);
+      background: radial-gradient(1200px 900px at 20% 10%, #1a1240 0%, #0f0a1f 55%) fixed,
+                  radial-gradient(800px 700px at 80% 90%, #1b0f2a 0%, #0f0a1f 60%) fixed;
+      overflow-x:hidden;
+    }
+    .container{
+      min-height:100%;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:28px; padding:56px 16px 88px;
+      position:relative;
+    }
+    .hearts{ position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+    .heart{ position:absolute; opacity:.25; filter:blur(1px); animation: floatUp linear infinite; }
+    @keyframes floatUp{ from{ transform:translateY(110vh) scale(.7) rotate(0deg); } to{ transform:translateY(-20vh) scale(1.1) rotate(360deg);} }
+
+    header{ text-align:center;}
+    h1{ font-size: clamp(28px, 5vw, 48px); margin:0; font-weight:700; letter-spacing:.5px; }
+    .sub{ color:var(--muted); margin-top:6px; font-weight:400; }
+
+    .card{
+      width: min(880px, 92vw);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid rgba(255,255,255,.12);
+      border-radius: 28px; box-shadow: var(--shadow);
+      padding: 28px 22px 26px;
+      backdrop-filter: blur(10px);
+    }
+
+    .countdown{ display:grid; grid-template-columns: repeat(4, 1fr); gap:14px; }
+    .unit{
+      background: var(--card);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius: 22px; padding: 18px 12px; text-align:center;
+      position: relative; overflow:hidden;
+    }
+    .unit:before{
+      content:""; position:absolute; inset:0; background: radial-gradient(400px 120px at 50% -10%, rgba(255,255,255,.14), transparent 50%);
+      opacity:.6;
+    }
+    .num{ font-size: clamp(28px, 6vw, 56px); font-weight:700; line-height:1; }
+    .label{ color: var(--muted); font-size: 14px; margin-top:8px; letter-spacing:.2px; }
+
+    .cta{
+      margin-top: 20px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:center;
+    }
+    button, .ghost{
+      cursor:pointer; border:none; border-radius:16px; padding:12px 16px; font-weight:600; font-size:15px;
+      transition: transform .14s ease, filter .14s ease, background .2s ease;
+    }
+    .primary{ background: linear-gradient(135deg, var(--accent), var(--accent-2)); color:white; }
+    .primary:hover{ transform: translateY(-2px); filter:brightness(1.05); }
+    .ghost{ background:transparent; color:var(--muted); border:1px dashed rgba(255,255,255,.2); }
+
+    footer{ text-align:center; color:var(--muted); font-size:13px; margin-top:6px;}
+    a{ color:#ffd2e6; }
+
+    .love-line{
+      margin: 8px auto 0; text-align:center; font-weight:600; color:#ffd2e6;
+    }
+
+    /* Responsive */
+    @media (max-width:640px){
+      .countdown{ grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="hearts" id="hearts"></div>
+
+    <header>
+      <h1>Pour Marya 💖</h1>
+      <p class="sub">Compte à rebours jusqu'à notre moment spécial ✨</p>
+    </header>
+
+    <section class="card">
+      <div class="countdown" id="countdown">
+        <div class="unit"><div class="num" id="days">0</div><div class="label">Jours</div></div>
+        <div class="unit"><div class="num" id="hours">0</div><div class="label">Heures</div></div>
+        <div class="unit"><div class="num" id="minutes">0</div><div class="label">Minutes</div></div>
+        <div class="unit"><div class="num" id="seconds">0</div><div class="label">Secondes</div></div>
+      </div>
+      <div class="cta">
+        <button class="primary" id="share">Partager à Marya</button>
+        <button class="ghost" id="editDate">Changer la date</button>
+      </div>
+      <p class="love-line" id="targetText">Le grand moment : <span id="target"></span></p>
+    </section>
+
+    <footer>
+      Fait avec ❤️ par <strong>Shikuri</strong>
+    </footer>
+  </div>
+
+  <script>
+    // === 1) RÉGLE LA DATE ICI ===
+    // Format recommandé: "YYYY-MM-DDTHH:MM" (heure locale du visiteur)
+    // Exemple: 2025-09-15T20:00
+    const DEFAULT_TARGET = "2025-09-15T20:00"; // <-- change ça
+
+    // Option bonus: autoriser ?date=YYYY-MM-DDTHH:MM dans l'URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const paramDate = urlParams.get('date');
+
+    let targetDate = new Date(paramDate || DEFAULT_TARGET);
+
+    const $days = document.getElementById('days');
+    const $hours = document.getElementById('hours');
+    const $minutes = document.getElementById('minutes');
+    const $seconds = document.getElementById('seconds');
+    const $target = document.getElementById('target');
+
+    const formatDate = (d)=> d.toLocaleString(undefined, {
+      weekday:'long', year:'numeric', month:'long', day:'numeric',
+      hour:'2-digit', minute:'2-digit'
+    });
+
+    function tick(){
+      const now = new Date();
+      const diff = targetDate - now; // ms
+
+      if (isNaN(targetDate.getTime())){
+        document.getElementById('countdown').style.opacity = .4;
+        document.getElementById('targetText').textContent = "Date invalide. Clique sur ‘Changer la date’.";
+        return;
+      }
+
+      if (diff <= 0){
+        $days.textContent = '0';
+        $hours.textContent = '0';
+        $minutes.textContent = '0';
+        $seconds.textContent = '0';
+        document.querySelector('.sub').textContent = "C'est le moment ! ✨";
+        celebrate();
+        clearInterval(timer);
+        return;
+      }
+
+      const totalSeconds = Math.floor(diff / 1000);
+      const days = Math.floor(totalSeconds / (3600*24));
+      const hours = Math.floor((totalSeconds % (3600*24)) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      $days.textContent = String(days);
+      $hours.textContent = String(hours).padStart(2,'0');
+      $minutes.textContent = String(minutes).padStart(2,'0');
+      $seconds.textContent = String(seconds).padStart(2,'0');
+
+      $target.textContent = formatDate(targetDate);
+    }
+
+    const timer = setInterval(tick, 1000); tick();
+
+    // === UI: Partage et changement de date ===
+    document.getElementById('share').addEventListener('click', async ()=>{
+      const shareUrl = new URL(window.location.href);
+      // Écrit la date dans l'URL pour la partager facilement
+      shareUrl.searchParams.set('date', targetDate.toISOString().slice(0,16));
+      const text = `Compte à rebours pour nous 💖\\n${shareUrl}`;
+      try{
+        await navigator.clipboard.writeText(text);
+        alert('Lien copié ! Envoie-le à Marya 🌸');
+      }catch(e){
+        prompt('Copie ce lien et envoie-le à Marya :', shareUrl.toString());
+      }
+    });
+
+    document.getElementById('editDate').addEventListener('click', ()=>{
+      const input = prompt('Entre la date (format: 2025-09-15T20:00) :',
+                           targetDate.toISOString().slice(0,16));
+      if(!input) return;
+      const d = new Date(input);
+      if(isNaN(d.getTime())){ alert('Format invalide.'); return; }
+      targetDate = d;
+      tick();
+    });
+
+    // === Fond animé de coeurs ===
+    const hearts = document.getElementById('hearts');
+    for(let i=0;i<30;i++){
+      const h = document.createElement('div');
+      h.className = 'heart';
+      const size = 16 + Math.random()*28; // 16–44px
+      h.style.width = size+'px'; h.style.height = size+'px';
+      h.style.left = (Math.random()*100)+'%';
+      h.style.animationDuration = (16+Math.random()*24)+'s';
+      h.style.animationDelay = (Math.random()*-30)+'s';
+      h.innerHTML = '❤️';
+      hearts.appendChild(h);
+    }
+
+    // === Mini célébration quand le compteur finit ===
+    function celebrate(){
+      const burst = document.createElement('canvas');
+      burst.width = innerWidth; burst.height = innerHeight; burst.style.position='fixed';
+      burst.style.inset='0'; burst.style.pointerEvents='none';
+      document.body.appendChild(burst);
+      const ctx = burst.getContext('2d');
+      const parts = Array.from({length:120},()=>({
+        x: innerWidth/2, y: innerHeight/2,
+        vx: (Math.random()*2-1)*6,
+        vy: (Math.random()*2-1)*6,
+        r: 2+Math.random()*3,
+        life: 60+Math.random()*40
+      }));
+      let frame = 0;
+      const id = setInterval(()=>{
+        frame++;
+        ctx.clearRect(0,0,burst.width, burst.height);
+        parts.forEach(p=>{
+          p.x+=p.vx; p.y+=p.vy; p.vy+=.09; p.life-=1;
+          ctx.globalAlpha = Math.max(p.life/100,0);
+          ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fillStyle='#ffd2e6'; ctx.fill();
+        });
+        if(frame>150){ clearInterval(id); burst.remove(); }
+      }, 16);
+    }
+  </script>
+</body>
+</html>
